@@ -28,3 +28,53 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        text = old_node.text
+        split_nodes = []
+        matches = extract_markdown_images(text)
+        if len(matches) == 0:
+            new_nodes.append(old_node)
+            continue
+        for image_alt, image_link in matches:
+            splitted = text.split(f"![{image_alt}]({image_link})", 1)
+            if len(splitted) != 2:
+                raise Exception("Invalid Mardown")
+            if splitted[0] != "":
+                split_nodes.append(TextNode(splitted[0], TextType.TEXT))
+            split_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+            text = splitted[1]
+        if text != "":
+            split_nodes.append(TextNode(text, TextType.TEXT))
+        new_nodes.extend(split_nodes)
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        text = old_node.text
+        split_nodes = []
+        matches = extract_markdown_links(text)
+        if len(matches) == 0:
+            new_nodes.append(old_node)
+            continue
+        for link_text, link_url in matches:
+            splitted = text.split(f"[{link_text}]({link_url})", 1)
+            if len(splitted) != 2:
+                raise Exception("Invalid Mardown")
+            if splitted[0] != "":
+                split_nodes.append(TextNode(splitted[0], TextType.TEXT))
+            split_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+            text = splitted[1]
+        if text != "":
+            split_nodes.append(TextNode(text, TextType.TEXT))
+        new_nodes.extend(split_nodes)
+    return new_nodes
