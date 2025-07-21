@@ -1,6 +1,6 @@
 import unittest
 
-from markdown_blocks import markdown_to_blocks
+from markdown_blocks import markdown_to_blocks, block_to_block_type, BlockType
 
 class TestBlockMarkdown(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -51,3 +51,33 @@ Paragraph continued
                 "Paragraph\nParagraph continued",
                 "Leading whitespace",
             ])
+
+    def test_block_to_block_type_heading(self):
+        block = "# Heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+
+    def test_block_to_block_type_code(self):
+        block = "```\nCode\nBlock\n```"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.CODE)
+
+    def test_block_to_block_type_quote(self):
+        block = ">This\n>is\n>a\n>quote"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.QUOTE)
+
+    def test_block_to_block_type_unordered_list(self):
+        block = "- Some\n- Items"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.UNORDERED_LIST)
+
+    def test_block_to_block_type_ordered_list(self):
+        block = "1. One\n2. Two"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.ORDERED_LIST)
+
+    def test_block_to_block_type_paragraph(self):
+        block = "A simple paragraph"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.PARAGRAPH)
